@@ -1,0 +1,1039 @@
+openapi: 3.0.3
+info:
+  title: Access Review Campaign
+  version: 1.0.0
+  description: |
+    Automated access review campaigns for SOC2, ISO 27001, and HIPAA compliance. 
+    Manages quarterly access certification cycles — who still needs what access 
+    to which systems. Prevents privilege creep by requiring managers and system 
+    owners to explicitly re-approve every user's access on a scheduled cadence. 
+    Generates auditor-ready certification evidence proving reviews happened.
+  contact:
+    name: ForgeSphere Identity Governance
+    email: identity-gov@forgesphere.example.com
+
+servers:
+  - url: https://accessreview.forgesphere.lightning.com/v1
+    description: Production Server
+  - url: http://localhost:8143/v1
+    description: Local Development Server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Campaigns
+    description: Create and manage access review campaigns.
+  - name: Reviews
+    description: Submit and track review decisions.
+  - name: Certifications
+    description: Retrieve auditor-ready certification evidence.
+
+paths:
+  # ==================== 1 & 2. CAMPAIGNS (POST + GET) ====================
+  /campaigns:
+    post:
+      tags: [Campaigns]
+      summary: Create a new access review campaign
+      description: |
+        Launches a new access review campaign. The campaign automatically 
+        discovers all users and their current entitlements across the 
+        specified systems, groups them by reviewer (typically the user's 
+        manager or system owner), and creates review tasks. The campaign 
+        has a fixed deadline — reviewers must certify or revoke each access.
+      operationId: createCampaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [campaignName, reviewType, scope, reviewerAssignment, startDate, dueDate]
+              properties:
+                campaignName:
+                  type: string
+                  description: "Human-readable campaign name."
+                  example: "Q4-2026-production-access-review"
+                description:
+                  type: string
+                  description: "Optional context."
+                  example: "Quarterly SOC2 access recertification for production systems."
+                reviewType:
+                  type: string
+                  enum: [QUARTERLY, ANNUAL, AD_HOC, ON_TERMINATION, ON_ROLE_CHANGE, POST_INCIDENT]
+                  description: "Trigger for the campaign."
+                  example: "QUARTERLY"
+                scope:
+                  type: object
+                  required: [systems, accessLevels]
+                  properties:
+                    systems:
+                      type: array
+                      description: "Systems in scope (e.g., AWS, GCP, Snowflake)."
+                      items:
+                        type: string
+                      example: ["aws-prod", "github-org", "snowflake-prod", "datadog"]
+                    accessLevels:
+                      type: array
+                      description: "Which privilege levels to review."
+                      items:
+                        type: string
+                        enum: [READ_ONLY, STANDARD, ELEVATED, ADMIN, ROOT]
+                      example: ["ELEVATED", "ADMIN", "ROOT"]
+                    excludeUsers:
+                      type: array
+                      description: "Users explicitly excluded (e.g., bots, service accounts)."
+                      items:
+                        type: string
+                      example: ["bot-ci@forgesphere.example.com"]
+                    departmentFilter:
+                      type: array
+                      description: "Optional. Only review users in these departments."
+                      items:
+                        type: string
+                      example: ["payments", "checkout"]
+                reviewerAssignment:
+                  type: string
+                  enum: [MANAGER, SYSTEM_OWNER, APPLICATION_OWNER, CROSS_FUNCTIONAL, SELF_ATTESTATION]
+                  description: "How reviewers are assigned."
+                  example: "MANAGER"
+                reviewerFallback:
+                  type: string
+                  description: "Who reviews if primary reviewer is unavailable."
+                  example: "department-head@forgesphere.example.com"
+                startDate:
+                  type: string
+                  format: date
+                  description: "When the campaign begins."
+                  example: "2026-11-10"
+                dueDate:
+                  type: string
+                  format: date
+                  description: "Reviewers must complete by this date."
+                  example: "2026-11-24"
+                escalationPolicy:
+                  type: object
+                  description: "What happens if reviewers don't complete in time."
+                  properties:
+                    escalateAfterDays:
+                      type: integer
+                      description: "Days after start to escalate reminders."
+                      example: 5
+                    escalateTo:
+                      type: string
+                      example: "department-head@forgesphere.example.com"
+                    autoRevokeUnreviewed:
+                      type: boolean
+                      description: "If true, unreviewed access is auto-revoked at deadline."
+                      example: true
+                    autoRevokeGraceDays:
+                      type: integer
+                      description: "Grace days after due date before auto-revoke."
+                      example: 3
+                notifyChannels:
+                  type: array
+                  items:
+                    type: string
+                    enum: [EMAIL, SLACK, PAGERDUTY, WEBHOOK]
+                  description: "How reviewers are notified."
+                  example: ["EMAIL", "SLACK"]
+                createdBy:
+                  type: string
+                  description: "Who initiated the campaign."
+                  example: "security-team@forgesphere.example.com"
+      responses:
+        '201':
+          description: Campaign created and review tasks generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A campaign with this name already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags: [Campaigns]
+      summary: List access review campaigns
+      description: |
+        Returns all campaigns with filters. Used by security teams, compliance 
+        officers, and auditors to track campaign progress, identify bottlenecks, 
+        and verify that reviews were completed on schedule.
+      operationId: listCampaigns
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [DRAFT, ACTIVE, IN_REVIEW, COMPLETED, OVERDUE, CANCELLED, ARCHIVED]
+          description: "Filter by campaign status."
+          example: "ACTIVE"
+        - name: reviewType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [QUARTERLY, ANNUAL, AD_HOC, ON_TERMINATION, ON_ROLE_CHANGE, POST_INCIDENT]
+          description: "Filter by review type."
+        - name: fromDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: "Campaigns starting after this date."
+          example: "2026-01-01"
+        - name: toDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: "Campaigns ending before this date."
+          example: "2026-12-31"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: "Page number (zero-based)."
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: "Number of items per page."
+      responses:
+        '200':
+          description: List of campaigns retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== 3. GET CAMPAIGN DETAILS ====================
+  /campaigns/{campaignId}:
+    get:
+      tags: [Campaigns]
+      summary: Get detailed status of a campaign
+      description: |
+        Returns the full state of a campaign — progress metrics, per-reviewer 
+        completion, outstanding items, and any escalated or auto-revoked 
+        access. Used by compliance officers to monitor at-risk campaigns 
+        before deadlines.
+      operationId: getCampaign
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "Unique identifier of the campaign."
+          example: "9c8f1a3b-6d7e-4a12-8f5e-123456789abc"
+        - name: includeReviewerBreakdown
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+          description: "Include per-reviewer progress details."
+          example: true
+      responses:
+        '200':
+          description: Campaign details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== 4 & 5. REVIEWS (POST + GET) ====================
+  /reviews:
+    post:
+      tags: [Reviews]
+      summary: Submit a review decision for an access item
+      description: |
+        Records a reviewer's decision on a single access item — CERTIFY 
+        (keep access), REVOKE (remove access), or MODIFY (change to a 
+        different access level). Every decision is timestamped and 
+        immutably logged. Bulk submission is supported for efficiency.
+      operationId: submitReview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [campaignId, reviewerId, decisions]
+              properties:
+                campaignId:
+                  type: string
+                  format: uuid
+                  description: "Campaign these decisions belong to."
+                  example: "9c8f1a3b-6d7e-4a12-8f5e-123456789abc"
+                reviewerId:
+                  type: string
+                  description: "Who is submitting these decisions."
+                  example: "manager@forgesphere.example.com"
+                decisions:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required: [itemId, decision]
+                    properties:
+                      itemId:
+                        type: string
+                        format: uuid
+                        description: "The access item being reviewed."
+                        example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+                      decision:
+                        type: string
+                        enum: [CERTIFY, REVOKE, MODIFY, ESCALATE, DEFER]
+                        description: "Reviewer's decision."
+                        example: "REVOKE"
+                      newAccessLevel:
+                        type: string
+                        enum: [READ_ONLY, STANDARD, ELEVATED, ADMIN, ROOT]
+                        description: "Required if decision = MODIFY."
+                        example: "STANDARD"
+                      comment:
+                        type: string
+                        description: "Required for REVOKE, MODIFY, ESCALATE, DEFER."
+                        example: "User moved to read-only role; elevated access no longer needed."
+                      escalateTo:
+                        type: string
+                        description: "Required if decision = ESCALATE."
+                        example: "ciso@forgesphere.example.com"
+                      deferUntil:
+                        type: string
+                        format: date
+                        description: "Required if decision = DEFER."
+                        example: "2026-11-20"
+                submittedAt:
+                  type: string
+                  format: date-time
+                  description: "Client-side timestamp (server will also record)."
+                  example: "2026-11-15T14:30:00Z"
+      responses:
+        '201':
+          description: Review decisions recorded successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewSubmission'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Campaign or item not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Item already reviewed or campaign closed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags: [Reviews]
+      summary: List review items pending or completed
+      description: |
+        Returns all review items with filters. Most common use: "what's on 
+        my plate?" (filter by reviewer and status=PENDING). Also supports 
+        compliance queries ("show all items where access was certified 
+        without justification").
+      operationId: listReviews
+      parameters:
+        - name: campaignId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "Campaign to query."
+          example: "9c8f1a3b-6d7e-4a12-8f5e-123456789abc"
+        - name: reviewerId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filter to a specific reviewer's items."
+          example: "manager@forgesphere.example.com"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PENDING, CERTIFIED, REVOKED, MODIFIED, ESCALATED, DEFERRED, AUTO_REVOKED]
+          description: "Filter by item status."
+          example: "PENDING"
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filter to a specific user's access items."
+          example: "amit.kumar@forgesphere.example.com"
+        - name: system
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filter by system."
+          example: "aws-prod"
+        - name: accessLevel
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [READ_ONLY, STANDARD, ELEVATED, ADMIN, ROOT]
+          description: "Filter by access level."
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [REVIEWER, USER, SYSTEM, ACCESS_LEVEL, DUE_DATE]
+            default: REVIEWER
+          description: "Sort order."
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: "Page number (zero-based)."
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: "Number of items per page."
+      responses:
+        '200':
+          description: List of review items retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewItemList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== 6. GET CERTIFICATION EVIDENCE ====================
+  /certifications/{campaignId}:
+    get:
+      tags: [Certifications]
+      summary: Retrieve auditor-ready certification evidence
+      description: |
+        Produces a complete, signed certification package for a completed 
+        campaign — proves that every user's access was reviewed, who reviewed 
+        it, when, and what decision was made. Includes cryptographic signature 
+        and chain-of-custody. Accepted by SOC2, ISO 27001, and HIPAA auditors.
+      operationId: getCertification
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "Campaign to certify."
+          example: "9c8f1a3b-6d7e-4a12-8f5e-123456789abc"
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PDF, CSV, JSON, XLSX]
+            default: PDF
+          description: "Output format."
+          example: "PDF"
+        - name: includeRawDecisions
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: "Include every individual decision as appendix."
+          example: true
+        - name: signReport
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+          description: "Sign the report with the campaign owner's key."
+          example: true
+      responses:
+        '200':
+          description: Certification evidence generated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certification'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Campaign not yet completed; certification not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "JWT token issued to compliance officers, security leads, and reviewers."
+
+  schemas:
+    Campaign:
+      type: object
+      required: [campaignId, campaignName, reviewType, status, startDate, dueDate, scope, metrics, createdAt]
+      properties:
+        campaignId:
+          type: string
+          format: uuid
+          example: "9c8f1a3b-6d7e-4a12-8f5e-123456789abc"
+        campaignName:
+          type: string
+          example: "Q4-2026-production-access-review"
+        description:
+          type: string
+          example: "Quarterly SOC2 access recertification for production systems."
+        reviewType:
+          type: string
+          enum: [QUARTERLY, ANNUAL, AD_HOC, ON_TERMINATION, ON_ROLE_CHANGE, POST_INCIDENT]
+          example: "QUARTERLY"
+        status:
+          type: string
+          enum: [DRAFT, ACTIVE, IN_REVIEW, COMPLETED, OVERDUE, CANCELLED, ARCHIVED]
+          example: "IN_REVIEW"
+        startDate:
+          type: string
+          format: date
+          example: "2026-11-10"
+        dueDate:
+          type: string
+          format: date
+          example: "2026-11-24"
+        scope:
+          type: object
+          properties:
+            systems:
+              type: array
+              items:
+                type: string
+              example: ["aws-prod", "github-org", "snowflake-prod"]
+            accessLevels:
+              type: array
+              items:
+                type: string
+                enum: [READ_ONLY, STANDARD, ELEVATED, ADMIN, ROOT]
+              example: ["ELEVATED", "ADMIN", "ROOT"]
+        reviewerAssignment:
+          type: string
+          enum: [MANAGER, SYSTEM_OWNER, APPLICATION_OWNER, CROSS_FUNCTIONAL, SELF_ATTESTATION]
+          example: "MANAGER"
+        metrics:
+          type: object
+          required: [totalItems, pendingItems, certifiedItems, revokedItems, modifiedItems, completionPercent]
+          properties:
+            totalItems:
+              type: integer
+              example: 1240
+            pendingItems:
+              type: integer
+              example: 342
+            certifiedItems:
+              type: integer
+              example: 812
+            revokedItems:
+              type: integer
+              example: 68
+            modifiedItems:
+              type: integer
+              example: 18
+            escalatedItems:
+              type: integer
+              example: 0
+            deferredItems:
+              type: integer
+              example: 0
+            autoRevokedItems:
+              type: integer
+              example: 0
+            completionPercent:
+              type: number
+              format: double
+              example: 72.4
+            totalReviewers:
+              type: integer
+              example: 42
+            reviewersCompleted:
+              type: integer
+              example: 28
+        reviewerBreakdown:
+          type: array
+          description: "Present if includeReviewerBreakdown=true."
+          items:
+            type: object
+            required: [reviewerId, reviewerName, totalItems, completedItems]
+            properties:
+              reviewerId:
+                type: string
+                example: "manager@forgesphere.example.com"
+              reviewerName:
+                type: string
+                example: "Priya Sharma"
+              department:
+                type: string
+                example: "payments"
+              totalItems:
+                type: integer
+                example: 42
+              completedItems:
+                type: integer
+                example: 38
+              pendingItems:
+                type: integer
+                example: 4
+              completionPercent:
+                type: number
+                format: double
+                example: 90.5
+              lastActivityAt:
+                type: string
+                format: date-time
+              status:
+                type: string
+                enum: [ON_TRACK, AT_RISK, OVERDUE, COMPLETED]
+                example: "ON_TRACK"
+        escalationPolicy:
+          type: object
+          properties:
+            escalateAfterDays:
+              type: integer
+              example: 5
+            escalateTo:
+              type: string
+              example: "department-head@forgesphere.example.com"
+            autoRevokeUnreviewed:
+              type: boolean
+              example: true
+            autoRevokeGraceDays:
+              type: integer
+              example: 3
+        createdBy:
+          type: string
+          example: "security-team@forgesphere.example.com"
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        certificationUrl:
+          type: string
+          description: "Available once campaign completes."
+          example: "https://storage.example.com/certifications/campaign-9c8f1a3b.pdf"
+        auditReference:
+          type: string
+          example: "audit://access-review/campaign-9c8f1a3b"
+
+    CampaignList:
+      type: object
+      required: [content, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Campaign'
+        totalElements:
+          type: integer
+          example: 12
+        totalPages:
+          type: integer
+          example: 1
+        page:
+          type: integer
+          example: 0
+        size:
+          type: integer
+          example: 20
+        summary:
+          type: object
+          properties:
+            totalCampaigns:
+              type: integer
+              example: 12
+            active:
+              type: integer
+              example: 3
+            overdue:
+              type: integer
+              example: 1
+            completedLast90d:
+              type: integer
+              example: 6
+            avgCompletionPercent:
+              type: number
+              format: double
+              example: 87.5
+
+    ReviewItem:
+      type: object
+      required: [itemId, campaignId, userId, userName, system, accessLevel, reviewerId, status]
+      properties:
+        itemId:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        campaignId:
+          type: string
+          format: uuid
+          example: "9c8f1a3b-6d7e-4a12-8f5e-123456789abc"
+        userId:
+          type: string
+          description: "User whose access is being reviewed."
+          example: "amit.kumar@forgesphere.example.com"
+        userName:
+          type: string
+          example: "Amit Kumar"
+        userDepartment:
+          type: string
+          example: "payments"
+        userRole:
+          type: string
+          example: "Senior Engineer"
+        system:
+          type: string
+          example: "aws-prod"
+        accessLevel:
+          type: string
+          enum: [READ_ONLY, STANDARD, ELEVATED, ADMIN, ROOT]
+          example: "ADMIN"
+        accessGrantedAt:
+          type: string
+          format: date-time
+          description: "When the access was originally granted."
+          example: "2024-06-15T10:00:00Z"
+        accessAgeDays:
+          type: integer
+          description: "How long the user has had this access."
+          example: 507
+        lastUsedAt:
+          type: string
+          format: date-time
+          description: "Last time the access was actually used (idle detection)."
+          example: "2026-10-01T14:30:00Z"
+        daysSinceLastUse:
+          type: integer
+          example: 34
+        isIdle:
+          type: boolean
+          description: "True if access hasn't been used in last 90 days."
+          example: false
+        riskScore:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: "Risk score based on access level, tenure, last use."
+          example: 72
+        reviewerId:
+          type: string
+          example: "manager@forgesphere.example.com"
+        reviewerName:
+          type: string
+          example: "Priya Sharma"
+        status:
+          type: string
+          enum: [PENDING, CERTIFIED, REVOKED, MODIFIED, ESCALATED, DEFERRED, AUTO_REVOKED]
+          example: "PENDING"
+        decision:
+          type: string
+          enum: [CERTIFY, REVOKE, MODIFY, ESCALATE, DEFER]
+        decisionComment:
+          type: string
+        decidedAt:
+          type: string
+          format: date-time
+        newAccessLevel:
+          type: string
+          enum: [READ_ONLY, STANDARD, ELEVATED, ADMIN, ROOT]
+        escalateTo:
+          type: string
+        deferUntil:
+          type: string
+          format: date
+        dueDate:
+          type: string
+          format: date
+          example: "2026-11-24"
+        daysUntilDue:
+          type: integer
+          example: 9
+        isOverdue:
+          type: boolean
+          example: false
+
+    ReviewItemList:
+      type: object
+      required: [content, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewItem'
+        totalElements:
+          type: integer
+          example: 1240
+        totalPages:
+          type: integer
+          example: 62
+        page:
+          type: integer
+          example: 0
+        size:
+          type: integer
+          example: 20
+        summary:
+          type: object
+          properties:
+            totalItems:
+              type: integer
+              example: 1240
+            pending:
+              type: integer
+              example: 342
+            certified:
+              type: integer
+              example: 812
+            revoked:
+              type: integer
+              example: 68
+            modified:
+              type: integer
+              example: 18
+            idleAccessCount:
+              type: integer
+              description: "Items with 90+ days without use."
+              example: 47
+            highRiskCount:
+              type: integer
+              description: "Items with riskScore >= 70."
+              example: 128
+
+    ReviewSubmission:
+      type: object
+      required: [submissionId, campaignId, reviewerId, decisions, submittedAt]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+          example: "b1a2c3d4-e5f6-7890-1234-567890abcdef"
+        campaignId:
+          type: string
+          format: uuid
+        reviewerId:
+          type: string
+          example: "manager@forgesphere.example.com"
+        decisions:
+          type: array
+          items:
+            type: object
+            properties:
+              itemId:
+                type: string
+                format: uuid
+              decision:
+                type: string
+                enum: [CERTIFY, REVOKE, MODIFY, ESCALATE, DEFER]
+                example: "REVOKE"
+              recordedAt:
+                type: string
+                format: date-time
+              status:
+                type: string
+                enum: [RECORDED, REJECTED]
+                example: "RECORDED"
+              rejectionReason:
+                type: string
+        totalAccepted:
+          type: integer
+          example: 5
+        totalRejected:
+          type: integer
+          example: 0
+        submittedAt:
+          type: string
+          format: date-time
+        auditReference:
+          type: string
+          example: "audit://access-review/submission-b1a2c3d4"
+
+    Certification:
+      type: object
+      required: [campaignId, campaignName, generatedAt, summary, signature, downloadUrl]
+      properties:
+        campaignId:
+          type: string
+          format: uuid
+        campaignName:
+          type: string
+          example: "Q4-2026-production-access-review"
+        generatedAt:
+          type: string
+          format: date-time
+        summary:
+          type: object
+          properties:
+            reviewPeriodStart:
+              type: string
+              format: date
+            reviewPeriodEnd:
+              type: string
+              format: date
+            totalUsersReviewed:
+              type: integer
+              example: 428
+            totalAccessItemsReviewed:
+              type: integer
+              example: 1240
+            certificationsMade:
+              type: integer
+              example: 812
+            revocationsMade:
+              type: integer
+              example: 68
+            modificationsMade:
+              type: integer
+              example: 18
+            autoRevocations:
+              type: integer
+              example: 0
+            completionRatePercent:
+              type: number
+              format: double
+              example: 100.0
+            avgReviewerResponseDays:
+              type: number
+              format: double
+              example: 3.2
+            systemsCovered:
+              type: array
+              items:
+                type: string
+              example: ["aws-prod", "github-org", "snowflake-prod"]
+        signerInfo:
+          type: object
+          properties:
+            signedBy:
+              type: string
+              example: "ciso@forgesphere.example.com"
+            signedAt:
+              type: string
+              format: date-time
+            role:
+              type: string
+              example: "Chief Information Security Officer"
+        signature:
+          type: object
+          required: [algorithm, sha256Hash]
+          properties:
+            algorithm:
+              type: string
+              example: "SHA256_RSA"
+            sha256Hash:
+              type: string
+              example: "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b"
+        complianceFrameworks:
+          type: array
+          items:
+            type: string
+          example: ["SOC2 CC6.2", "ISO27001 A.9.2.5", "HIPAA 164.312(a)(1)"]
+        downloadUrl:
+          type: string
+          example: "https://storage.example.com/certifications/campaign-9c8f1a3b.pdf"
+        expiresAt:
+          type: string
+          format: date-time
+          description: "Download URL validity."
+        evidenceVaultReference:
+          type: string
+          example: "compliance-evidence://soc2/CC6.2/access-review-q4-2026"
+
+    ErrorResponse:
+      type: object
+      required: [status, message, timestamp, path]
+      properties:
+        status:
+          type: integer
+          example: 409
+        errorCode:
+          type: string
+          example: "ITEM_ALREADY_REVIEWED"
+        message:
+          type: string
+          example: "Item a1b2c3d4 has already been reviewed and cannot be changed."
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+          example: "/v1/reviews"
+        serviceTransactionId:
+          type: string
+          example: "523f52b2-64a5-465e-b245-3efbe78f70ae"
+
+  responses:
+    BadRequest:
+      description: Invalid request payload or missing required fields.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Campaign or item ID not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

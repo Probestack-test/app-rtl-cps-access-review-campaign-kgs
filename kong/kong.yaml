@@ -1,0 +1,115 @@
+_format_version: "3.0"
+_transform: true
+
+########################################################
+# SERVICES
+########################################################
+
+services:
+  - name: access-review-campaign
+    host: access-review-campaign
+    port: 443
+    protocol: https
+    path: /api
+    retries: 5
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: access-review-campaign-get-api-v1-payments-campaigns
+        protocols:
+          - https
+          - http
+        methods:
+          - GET
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/campaigns
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+      - name: access-review-campaign-post-api-v1-payments-campaigns
+        protocols:
+          - https
+          - http
+        methods:
+          - POST
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/campaigns
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+      - name: access-review-campaign-get-api-v1-payments-campaigns-campaignid
+        protocols:
+          - https
+          - http
+        methods:
+          - GET
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/campaigns/{campaignId}
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+      - name: access-review-campaign-get-api-v1-payments-reviews
+        protocols:
+          - https
+          - http
+        methods:
+          - GET
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/reviews
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+      - name: access-review-campaign-post-api-v1-payments-reviews
+        protocols:
+          - https
+          - http
+        methods:
+          - POST
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/reviews
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+      - name: access-review-campaign-get-api-v1-payments-certifications-campaignid
+        protocols:
+          - https
+          - http
+        methods:
+          - GET
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/certifications/{campaignId}
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+
+########################################################
+# PLUGINS
+########################################################
+
+plugins:
+  []
+
+########################################################
+# UPSTREAMS + TARGETS
+########################################################
+
+upstreams:
+  - name: access-review-campaign
+    algorithm: round-robin
+    slots: 10000
+    targets:
+      - target: api.example.com:443
+        weight: 100
