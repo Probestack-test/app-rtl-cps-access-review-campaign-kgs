@@ -1,0 +1,1471 @@
+{
+  "info": {
+    "name": "Access Review Campaign Postman Collection",
+    "description": "Automated access review campaigns for SOC2, ISO 27001, and HIPAA compliance. \nManages quarterly access certification cycles — who still needs what access \nto which systems. Prevents privilege creep by requiring managers and system \nowners to explicitly re-approve every user's access on a scheduled cadence. \nGenerates auditor-ready certification evidence proving reviews happened.\n\nOpenAPI version: 3.0.3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://accessreview.forgesphere.lightning.com/v1",
+      "type": "string",
+      "description": "Override with the base URL of the deployed Kong gateway."
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "status",
+      "value": "",
+      "type": "string",
+      "description": "Filter by campaign status."
+    },
+    {
+      "key": "reviewType",
+      "value": "",
+      "type": "string",
+      "description": "Filter by review type."
+    },
+    {
+      "key": "fromDate",
+      "value": "",
+      "type": "string",
+      "description": "Campaigns starting after this date."
+    },
+    {
+      "key": "toDate",
+      "value": "",
+      "type": "string",
+      "description": "Campaigns ending before this date."
+    },
+    {
+      "key": "page",
+      "value": "",
+      "type": "string",
+      "description": "Page number (zero-based)."
+    },
+    {
+      "key": "size",
+      "value": "",
+      "type": "string",
+      "description": "Number of items per page."
+    },
+    {
+      "key": "campaignId",
+      "value": "",
+      "type": "string",
+      "description": "Unique identifier of the campaign."
+    },
+    {
+      "key": "includeReviewerBreakdown",
+      "value": "",
+      "type": "string",
+      "description": "Include per-reviewer progress details."
+    },
+    {
+      "key": "reviewerId",
+      "value": "",
+      "type": "string",
+      "description": "Filter to a specific reviewer's items."
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "Filter to a specific user's access items."
+    },
+    {
+      "key": "system",
+      "value": "",
+      "type": "string",
+      "description": "Filter by system."
+    },
+    {
+      "key": "accessLevel",
+      "value": "",
+      "type": "string",
+      "description": "Filter by access level."
+    },
+    {
+      "key": "sortBy",
+      "value": "",
+      "type": "string",
+      "description": "Sort order."
+    },
+    {
+      "key": "format",
+      "value": "",
+      "type": "string",
+      "description": "Output format."
+    },
+    {
+      "key": "includeRawDecisions",
+      "value": "",
+      "type": "string",
+      "description": "Include every individual decision as appendix."
+    },
+    {
+      "key": "signReport",
+      "value": "",
+      "type": "string",
+      "description": "Sign the report with the campaign owner's key."
+    }
+  ],
+  "item": [
+    {
+      "name": "Create a new access review campaign",
+      "request": {
+        "method": "POST",
+        "description": "Create a new access review campaign\n\nResponses:\n- 201: Campaign created and review tasks generated.\n- 400: Response\n- 409: A campaign with this name already exists.\n- 500: Response",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/campaigns",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "campaigns"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "201 Campaign created and review tasks generated.",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Create a new access review campaign\n\nResponses:\n- 201: Campaign created and review tasks generated.\n- 400: Response\n- 409: A campaign with this name already exists.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Campaign created and review tasks generated.",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "400",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Create a new access review campaign\n\nResponses:\n- 201: Campaign created and review tasks generated.\n- 400: Response\n- 409: A campaign with this name already exists.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "400",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "409 A campaign with this name already exists.",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Create a new access review campaign\n\nResponses:\n- 201: Campaign created and review tasks generated.\n- 400: Response\n- 409: A campaign with this name already exists.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "A campaign with this name already exists.",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Create a new access review campaign\n\nResponses:\n- 201: Campaign created and review tasks generated.\n- 400: Response\n- 409: A campaign with this name already exists.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "List access review campaigns",
+      "request": {
+        "method": "GET",
+        "description": "List access review campaigns\n\nResponses:\n- 200: List of campaigns retrieved successfully.\n- 400: Response\n- 500: Response",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/campaigns?status={{status}}&reviewType={{reviewType}}&fromDate={{fromDate}}&toDate={{toDate}}&page={{page}}&size={{size}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "campaigns"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "{{status}}",
+              "disabled": true,
+              "description": "Filter by campaign status."
+            },
+            {
+              "key": "reviewType",
+              "value": "{{reviewType}}",
+              "disabled": true,
+              "description": "Filter by review type."
+            },
+            {
+              "key": "fromDate",
+              "value": "{{fromDate}}",
+              "disabled": true,
+              "description": "Campaigns starting after this date."
+            },
+            {
+              "key": "toDate",
+              "value": "{{toDate}}",
+              "disabled": true,
+              "description": "Campaigns ending before this date."
+            },
+            {
+              "key": "page",
+              "value": "{{page}}",
+              "disabled": true,
+              "description": "Page number (zero-based)."
+            },
+            {
+              "key": "size",
+              "value": "{{size}}",
+              "disabled": true,
+              "description": "Number of items per page."
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "200 List of campaigns retrieved successfully.",
+          "originalRequest": {
+            "method": "GET",
+            "description": "List access review campaigns\n\nResponses:\n- 200: List of campaigns retrieved successfully.\n- 400: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns?status={{status}}&reviewType={{reviewType}}&fromDate={{fromDate}}&toDate={{toDate}}&page={{page}}&size={{size}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "{{status}}",
+                  "disabled": true,
+                  "description": "Filter by campaign status."
+                },
+                {
+                  "key": "reviewType",
+                  "value": "{{reviewType}}",
+                  "disabled": true,
+                  "description": "Filter by review type."
+                },
+                {
+                  "key": "fromDate",
+                  "value": "{{fromDate}}",
+                  "disabled": true,
+                  "description": "Campaigns starting after this date."
+                },
+                {
+                  "key": "toDate",
+                  "value": "{{toDate}}",
+                  "disabled": true,
+                  "description": "Campaigns ending before this date."
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "disabled": true,
+                  "description": "Page number (zero-based)."
+                },
+                {
+                  "key": "size",
+                  "value": "{{size}}",
+                  "disabled": true,
+                  "description": "Number of items per page."
+                }
+              ]
+            }
+          },
+          "status": "List of campaigns retrieved successfully.",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "400",
+          "originalRequest": {
+            "method": "GET",
+            "description": "List access review campaigns\n\nResponses:\n- 200: List of campaigns retrieved successfully.\n- 400: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns?status={{status}}&reviewType={{reviewType}}&fromDate={{fromDate}}&toDate={{toDate}}&page={{page}}&size={{size}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "{{status}}",
+                  "disabled": true,
+                  "description": "Filter by campaign status."
+                },
+                {
+                  "key": "reviewType",
+                  "value": "{{reviewType}}",
+                  "disabled": true,
+                  "description": "Filter by review type."
+                },
+                {
+                  "key": "fromDate",
+                  "value": "{{fromDate}}",
+                  "disabled": true,
+                  "description": "Campaigns starting after this date."
+                },
+                {
+                  "key": "toDate",
+                  "value": "{{toDate}}",
+                  "disabled": true,
+                  "description": "Campaigns ending before this date."
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "disabled": true,
+                  "description": "Page number (zero-based)."
+                },
+                {
+                  "key": "size",
+                  "value": "{{size}}",
+                  "disabled": true,
+                  "description": "Number of items per page."
+                }
+              ]
+            }
+          },
+          "status": "400",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "GET",
+            "description": "List access review campaigns\n\nResponses:\n- 200: List of campaigns retrieved successfully.\n- 400: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns?status={{status}}&reviewType={{reviewType}}&fromDate={{fromDate}}&toDate={{toDate}}&page={{page}}&size={{size}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "{{status}}",
+                  "disabled": true,
+                  "description": "Filter by campaign status."
+                },
+                {
+                  "key": "reviewType",
+                  "value": "{{reviewType}}",
+                  "disabled": true,
+                  "description": "Filter by review type."
+                },
+                {
+                  "key": "fromDate",
+                  "value": "{{fromDate}}",
+                  "disabled": true,
+                  "description": "Campaigns starting after this date."
+                },
+                {
+                  "key": "toDate",
+                  "value": "{{toDate}}",
+                  "disabled": true,
+                  "description": "Campaigns ending before this date."
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "disabled": true,
+                  "description": "Page number (zero-based)."
+                },
+                {
+                  "key": "size",
+                  "value": "{{size}}",
+                  "disabled": true,
+                  "description": "Number of items per page."
+                }
+              ]
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "Get detailed status of a campaign",
+      "request": {
+        "method": "GET",
+        "description": "Get detailed status of a campaign\n\nResponses:\n- 200: Campaign details retrieved successfully.\n- 404: Response\n- 500: Response",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/campaigns/:campaignId?includeReviewerBreakdown={{includeReviewerBreakdown}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "campaigns",
+            ":campaignId"
+          ],
+          "query": [
+            {
+              "key": "includeReviewerBreakdown",
+              "value": "{{includeReviewerBreakdown}}",
+              "disabled": true,
+              "description": "Include per-reviewer progress details."
+            }
+          ],
+          "variable": [
+            {
+              "key": "campaignId",
+              "value": "{{campaignId}}",
+              "description": "Unique identifier of the campaign."
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "200 Campaign details retrieved successfully.",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Get detailed status of a campaign\n\nResponses:\n- 200: Campaign details retrieved successfully.\n- 404: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:campaignId?includeReviewerBreakdown={{includeReviewerBreakdown}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":campaignId"
+              ],
+              "query": [
+                {
+                  "key": "includeReviewerBreakdown",
+                  "value": "{{includeReviewerBreakdown}}",
+                  "disabled": true,
+                  "description": "Include per-reviewer progress details."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "description": "Unique identifier of the campaign."
+                }
+              ]
+            }
+          },
+          "status": "Campaign details retrieved successfully.",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "404",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Get detailed status of a campaign\n\nResponses:\n- 200: Campaign details retrieved successfully.\n- 404: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:campaignId?includeReviewerBreakdown={{includeReviewerBreakdown}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":campaignId"
+              ],
+              "query": [
+                {
+                  "key": "includeReviewerBreakdown",
+                  "value": "{{includeReviewerBreakdown}}",
+                  "disabled": true,
+                  "description": "Include per-reviewer progress details."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "description": "Unique identifier of the campaign."
+                }
+              ]
+            }
+          },
+          "status": "404",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Get detailed status of a campaign\n\nResponses:\n- 200: Campaign details retrieved successfully.\n- 404: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/:campaignId?includeReviewerBreakdown={{includeReviewerBreakdown}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campaigns",
+                ":campaignId"
+              ],
+              "query": [
+                {
+                  "key": "includeReviewerBreakdown",
+                  "value": "{{includeReviewerBreakdown}}",
+                  "disabled": true,
+                  "description": "Include per-reviewer progress details."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "description": "Unique identifier of the campaign."
+                }
+              ]
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "Submit a review decision for an access item",
+      "request": {
+        "method": "POST",
+        "description": "Submit a review decision for an access item\n\nResponses:\n- 201: Review decisions recorded successfully.\n- 400: Response\n- 404: Campaign or item not found.\n- 409: Item already reviewed or campaign closed.\n- 500: Response",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/reviews",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "reviews"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "201 Review decisions recorded successfully.",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Submit a review decision for an access item\n\nResponses:\n- 201: Review decisions recorded successfully.\n- 400: Response\n- 404: Campaign or item not found.\n- 409: Item already reviewed or campaign closed.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Review decisions recorded successfully.",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "400",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Submit a review decision for an access item\n\nResponses:\n- 201: Review decisions recorded successfully.\n- 400: Response\n- 404: Campaign or item not found.\n- 409: Item already reviewed or campaign closed.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "400",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "404 Campaign or item not found.",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Submit a review decision for an access item\n\nResponses:\n- 201: Review decisions recorded successfully.\n- 400: Response\n- 404: Campaign or item not found.\n- 409: Item already reviewed or campaign closed.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Campaign or item not found.",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "409 Item already reviewed or campaign closed.",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Submit a review decision for an access item\n\nResponses:\n- 201: Review decisions recorded successfully.\n- 400: Response\n- 404: Campaign or item not found.\n- 409: Item already reviewed or campaign closed.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Item already reviewed or campaign closed.",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Submit a review decision for an access item\n\nResponses:\n- 201: Review decisions recorded successfully.\n- 400: Response\n- 404: Campaign or item not found.\n- 409: Item already reviewed or campaign closed.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "List review items pending or completed",
+      "request": {
+        "method": "GET",
+        "description": "List review items pending or completed\n\nResponses:\n- 200: List of review items retrieved successfully.\n- 400: Response\n- 500: Response",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/reviews?campaignId={{campaignId}}&reviewerId={{reviewerId}}&status={{status}}&userId={{userId}}&system={{system}}&accessLevel={{accessLevel}}&sortBy={{sortBy}}&page={{page}}&size={{size}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "reviews"
+          ],
+          "query": [
+            {
+              "key": "campaignId",
+              "value": "{{campaignId}}",
+              "disabled": false,
+              "description": "Campaign to query."
+            },
+            {
+              "key": "reviewerId",
+              "value": "{{reviewerId}}",
+              "disabled": true,
+              "description": "Filter to a specific reviewer's items."
+            },
+            {
+              "key": "status",
+              "value": "{{status}}",
+              "disabled": true,
+              "description": "Filter by item status."
+            },
+            {
+              "key": "userId",
+              "value": "{{userId}}",
+              "disabled": true,
+              "description": "Filter to a specific user's access items."
+            },
+            {
+              "key": "system",
+              "value": "{{system}}",
+              "disabled": true,
+              "description": "Filter by system."
+            },
+            {
+              "key": "accessLevel",
+              "value": "{{accessLevel}}",
+              "disabled": true,
+              "description": "Filter by access level."
+            },
+            {
+              "key": "sortBy",
+              "value": "{{sortBy}}",
+              "disabled": true,
+              "description": "Sort order."
+            },
+            {
+              "key": "page",
+              "value": "{{page}}",
+              "disabled": true,
+              "description": "Page number (zero-based)."
+            },
+            {
+              "key": "size",
+              "value": "{{size}}",
+              "disabled": true,
+              "description": "Number of items per page."
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "200 List of review items retrieved successfully.",
+          "originalRequest": {
+            "method": "GET",
+            "description": "List review items pending or completed\n\nResponses:\n- 200: List of review items retrieved successfully.\n- 400: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews?campaignId={{campaignId}}&reviewerId={{reviewerId}}&status={{status}}&userId={{userId}}&system={{system}}&accessLevel={{accessLevel}}&sortBy={{sortBy}}&page={{page}}&size={{size}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "disabled": false,
+                  "description": "Campaign to query."
+                },
+                {
+                  "key": "reviewerId",
+                  "value": "{{reviewerId}}",
+                  "disabled": true,
+                  "description": "Filter to a specific reviewer's items."
+                },
+                {
+                  "key": "status",
+                  "value": "{{status}}",
+                  "disabled": true,
+                  "description": "Filter by item status."
+                },
+                {
+                  "key": "userId",
+                  "value": "{{userId}}",
+                  "disabled": true,
+                  "description": "Filter to a specific user's access items."
+                },
+                {
+                  "key": "system",
+                  "value": "{{system}}",
+                  "disabled": true,
+                  "description": "Filter by system."
+                },
+                {
+                  "key": "accessLevel",
+                  "value": "{{accessLevel}}",
+                  "disabled": true,
+                  "description": "Filter by access level."
+                },
+                {
+                  "key": "sortBy",
+                  "value": "{{sortBy}}",
+                  "disabled": true,
+                  "description": "Sort order."
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "disabled": true,
+                  "description": "Page number (zero-based)."
+                },
+                {
+                  "key": "size",
+                  "value": "{{size}}",
+                  "disabled": true,
+                  "description": "Number of items per page."
+                }
+              ]
+            }
+          },
+          "status": "List of review items retrieved successfully.",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "400",
+          "originalRequest": {
+            "method": "GET",
+            "description": "List review items pending or completed\n\nResponses:\n- 200: List of review items retrieved successfully.\n- 400: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews?campaignId={{campaignId}}&reviewerId={{reviewerId}}&status={{status}}&userId={{userId}}&system={{system}}&accessLevel={{accessLevel}}&sortBy={{sortBy}}&page={{page}}&size={{size}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "disabled": false,
+                  "description": "Campaign to query."
+                },
+                {
+                  "key": "reviewerId",
+                  "value": "{{reviewerId}}",
+                  "disabled": true,
+                  "description": "Filter to a specific reviewer's items."
+                },
+                {
+                  "key": "status",
+                  "value": "{{status}}",
+                  "disabled": true,
+                  "description": "Filter by item status."
+                },
+                {
+                  "key": "userId",
+                  "value": "{{userId}}",
+                  "disabled": true,
+                  "description": "Filter to a specific user's access items."
+                },
+                {
+                  "key": "system",
+                  "value": "{{system}}",
+                  "disabled": true,
+                  "description": "Filter by system."
+                },
+                {
+                  "key": "accessLevel",
+                  "value": "{{accessLevel}}",
+                  "disabled": true,
+                  "description": "Filter by access level."
+                },
+                {
+                  "key": "sortBy",
+                  "value": "{{sortBy}}",
+                  "disabled": true,
+                  "description": "Sort order."
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "disabled": true,
+                  "description": "Page number (zero-based)."
+                },
+                {
+                  "key": "size",
+                  "value": "{{size}}",
+                  "disabled": true,
+                  "description": "Number of items per page."
+                }
+              ]
+            }
+          },
+          "status": "400",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "GET",
+            "description": "List review items pending or completed\n\nResponses:\n- 200: List of review items retrieved successfully.\n- 400: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews?campaignId={{campaignId}}&reviewerId={{reviewerId}}&status={{status}}&userId={{userId}}&system={{system}}&accessLevel={{accessLevel}}&sortBy={{sortBy}}&page={{page}}&size={{size}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "disabled": false,
+                  "description": "Campaign to query."
+                },
+                {
+                  "key": "reviewerId",
+                  "value": "{{reviewerId}}",
+                  "disabled": true,
+                  "description": "Filter to a specific reviewer's items."
+                },
+                {
+                  "key": "status",
+                  "value": "{{status}}",
+                  "disabled": true,
+                  "description": "Filter by item status."
+                },
+                {
+                  "key": "userId",
+                  "value": "{{userId}}",
+                  "disabled": true,
+                  "description": "Filter to a specific user's access items."
+                },
+                {
+                  "key": "system",
+                  "value": "{{system}}",
+                  "disabled": true,
+                  "description": "Filter by system."
+                },
+                {
+                  "key": "accessLevel",
+                  "value": "{{accessLevel}}",
+                  "disabled": true,
+                  "description": "Filter by access level."
+                },
+                {
+                  "key": "sortBy",
+                  "value": "{{sortBy}}",
+                  "disabled": true,
+                  "description": "Sort order."
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "disabled": true,
+                  "description": "Page number (zero-based)."
+                },
+                {
+                  "key": "size",
+                  "value": "{{size}}",
+                  "disabled": true,
+                  "description": "Number of items per page."
+                }
+              ]
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "Retrieve auditor-ready certification evidence",
+      "request": {
+        "method": "GET",
+        "description": "Retrieve auditor-ready certification evidence\n\nResponses:\n- 200: Certification evidence generated successfully.\n- 404: Response\n- 409: Campaign not yet completed; certification not available.\n- 500: Response",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/certifications/:campaignId?format={{format}}&includeRawDecisions={{includeRawDecisions}}&signReport={{signReport}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "certifications",
+            ":campaignId"
+          ],
+          "query": [
+            {
+              "key": "format",
+              "value": "{{format}}",
+              "disabled": true,
+              "description": "Output format."
+            },
+            {
+              "key": "includeRawDecisions",
+              "value": "{{includeRawDecisions}}",
+              "disabled": true,
+              "description": "Include every individual decision as appendix."
+            },
+            {
+              "key": "signReport",
+              "value": "{{signReport}}",
+              "disabled": true,
+              "description": "Sign the report with the campaign owner's key."
+            }
+          ],
+          "variable": [
+            {
+              "key": "campaignId",
+              "value": "{{campaignId}}",
+              "description": "Campaign to certify."
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "200 Certification evidence generated successfully.",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Retrieve auditor-ready certification evidence\n\nResponses:\n- 200: Certification evidence generated successfully.\n- 404: Response\n- 409: Campaign not yet completed; certification not available.\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/certifications/:campaignId?format={{format}}&includeRawDecisions={{includeRawDecisions}}&signReport={{signReport}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "certifications",
+                ":campaignId"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "{{format}}",
+                  "disabled": true,
+                  "description": "Output format."
+                },
+                {
+                  "key": "includeRawDecisions",
+                  "value": "{{includeRawDecisions}}",
+                  "disabled": true,
+                  "description": "Include every individual decision as appendix."
+                },
+                {
+                  "key": "signReport",
+                  "value": "{{signReport}}",
+                  "disabled": true,
+                  "description": "Sign the report with the campaign owner's key."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "description": "Campaign to certify."
+                }
+              ]
+            }
+          },
+          "status": "Certification evidence generated successfully.",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "404",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Retrieve auditor-ready certification evidence\n\nResponses:\n- 200: Certification evidence generated successfully.\n- 404: Response\n- 409: Campaign not yet completed; certification not available.\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/certifications/:campaignId?format={{format}}&includeRawDecisions={{includeRawDecisions}}&signReport={{signReport}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "certifications",
+                ":campaignId"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "{{format}}",
+                  "disabled": true,
+                  "description": "Output format."
+                },
+                {
+                  "key": "includeRawDecisions",
+                  "value": "{{includeRawDecisions}}",
+                  "disabled": true,
+                  "description": "Include every individual decision as appendix."
+                },
+                {
+                  "key": "signReport",
+                  "value": "{{signReport}}",
+                  "disabled": true,
+                  "description": "Sign the report with the campaign owner's key."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "description": "Campaign to certify."
+                }
+              ]
+            }
+          },
+          "status": "404",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "409 Campaign not yet completed; certification not available.",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Retrieve auditor-ready certification evidence\n\nResponses:\n- 200: Certification evidence generated successfully.\n- 404: Response\n- 409: Campaign not yet completed; certification not available.\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/certifications/:campaignId?format={{format}}&includeRawDecisions={{includeRawDecisions}}&signReport={{signReport}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "certifications",
+                ":campaignId"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "{{format}}",
+                  "disabled": true,
+                  "description": "Output format."
+                },
+                {
+                  "key": "includeRawDecisions",
+                  "value": "{{includeRawDecisions}}",
+                  "disabled": true,
+                  "description": "Include every individual decision as appendix."
+                },
+                {
+                  "key": "signReport",
+                  "value": "{{signReport}}",
+                  "disabled": true,
+                  "description": "Sign the report with the campaign owner's key."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "description": "Campaign to certify."
+                }
+              ]
+            }
+          },
+          "status": "Campaign not yet completed; certification not available.",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Retrieve auditor-ready certification evidence\n\nResponses:\n- 200: Certification evidence generated successfully.\n- 404: Response\n- 409: Campaign not yet completed; certification not available.\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/certifications/:campaignId?format={{format}}&includeRawDecisions={{includeRawDecisions}}&signReport={{signReport}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "certifications",
+                ":campaignId"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "{{format}}",
+                  "disabled": true,
+                  "description": "Output format."
+                },
+                {
+                  "key": "includeRawDecisions",
+                  "value": "{{includeRawDecisions}}",
+                  "disabled": true,
+                  "description": "Include every individual decision as appendix."
+                },
+                {
+                  "key": "signReport",
+                  "value": "{{signReport}}",
+                  "disabled": true,
+                  "description": "Sign the report with the campaign owner's key."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "description": "Campaign to certify."
+                }
+              ]
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    }
+  ]
+}
